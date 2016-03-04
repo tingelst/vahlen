@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Core>
 
 namespace vahlen {
@@ -19,28 +21,28 @@ Matrix<T> Id() {
 template <typename T>
 Matrix<T> E1() {
   Matrix<T> m = Matrix<T>::Zero();
-  m(3, 0) = T(1.0);
-  m(2, 1) = T(1.0);
-  m(1, 2) = T(1.0);
-  m(0, 3) = T(1.0);
-  m(7, 4) = T(-1.0);
-  m(6, 5) = T(-1.0);
-  m(5, 6) = T(-1.0);
-  m(4, 7) = T(-1.0);
+  m(2, 0) = T(1.0);
+  m(3, 1) = T(1.0);
+  m(0, 2) = T(1.0);
+  m(1, 3) = T(1.0);
+  m(6, 4) = T(-1.0);
+  m(7, 5) = T(-1.0);
+  m(4, 6) = T(-1.0);
+  m(5, 7) = T(-1.0);
   return m;
 }
 
 template <typename T>
 Matrix<T> E2() {
   Matrix<T> m = Matrix<T>::Zero();
-  m(2, 0) = T(1.0);
-  m(3, 1) = T(-1.0);
-  m(0, 2) = T(1.0);
-  m(1, 3) = T(-1.0);
-  m(6, 4) = T(-1.0);
-  m(7, 5) = T(1.0);
-  m(4, 6) = T(-1.0);
-  m(5, 7) = T(1.0);
+  m(3, 0) = T(1.0);
+  m(2, 1) = T(-1.0);
+  m(1, 2) = T(-1.0);
+  m(0, 3) = T(1.0);
+  m(7, 4) = T(-1.0);
+  m(6, 5) = T(1.0);
+  m(5, 6) = T(1.0);
+  m(4, 7) = T(-1.0);
   return m;
 }
 
@@ -52,6 +54,26 @@ Matrix<T> E3() {
   m(4, 4) = T(-1.0);
   m(5, 5) = T(-1.0);
   return m;
+}
+
+template <typename T>
+Matrix<T> E12() {
+  return E1<T>() * E2<T>();
+}
+
+template <typename T>
+Matrix<T> E13() {
+  return E1<T>() * E3<T>();
+}
+
+template <typename T>
+Matrix<T> E23() {
+  return E2<T>() * E3<T>();
+}
+
+template <typename T>
+Matrix<T> E123() {
+  return E1<T>() * E2<T>() * E3<T>();
 }
 
 template <typename T>
@@ -90,9 +112,6 @@ Matrix44<T> CliffordConjugate(const Matrix44<T> x) {
 
 template <typename T>
 Matrix<T> Reverse(const Matrix<T>& x) {
-  // a + ib = [[a -b]
-  //           [b  a]]
-
   Matrix44<T> a = x.topLeftCorner(4, 4);
   Matrix44<T> b = x.topRightCorner(4, 4);
   Matrix44<T> c = x.bottomLeftCorner(4, 4);
@@ -105,4 +124,35 @@ Matrix<T> Reverse(const Matrix<T>& x) {
   m.bottomRightCorner(4, 4) = CliffordConjugate(a);
   return m;
 }
+
+
+template <typename T>
+Matrix<T> Point(const T* x) {
+  Matrix<T> m = x[0] * E1<T>() + x[1] * E2<T>() + x[2] * E3<T>();
+  return m + T(0.5) * m * m * Ni<T>() + No<T>();
 }
+
+template <typename T>
+Matrix<T> Point(const Matrix<T>& x) {
+  return x + T(0.5) * x * x * Ni<T>() + No<T>();
+}
+
+template <typename T>
+Matrix<T> Rotor(const T* x) {
+  return x[0] * Id<T>() + x[1] * E12<T>() + x[2] * E13<T>() + x[3] * E23<T>();
+}
+
+template <typename T>
+Matrix<T> Translator(const T* x) {
+  return x[0] * Id<T>() + x[1] * E1<T>() * Ni<T>() + x[2] * E2<T>() * Ni<T>() +
+         x[3] * E3<T>() * Ni<T>();
+}
+
+template <typename T>
+Matrix<T> Motor(const T* x) {
+  return x[0] * Id<T>() + x[1] * E12<T>() + x[2] * E13<T>() + x[3] * E23<T>() +
+         x[4] * E1<T>() * Ni<T>() + x[5] * E2<T>() * Ni<T>() +
+         x[6] * E3<T>() * Ni<T>() + x[7] * E123<T>() * Ni<T>();
+}
+
+}  // namespace vahlen
