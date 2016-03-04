@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.2)
 project(vahlen)
 
 # This sets where to look for modules (e.g. "Find*.cmake" files)
