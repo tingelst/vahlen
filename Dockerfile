@@ -16,3 +16,4 @@ RUN mkdir -p /usr/src/ \
 
 RUN mkdir -p /usr/src/vahlen
 VOLUME /usr/src/vahlen
+WORKDIR /usr/src/vahlen/build

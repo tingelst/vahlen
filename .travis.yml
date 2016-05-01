@@ -5,4 +5,4 @@ install:
   - docker build -t tingelst/vahlen:1.0 .
 
 script:
-  - docker images
+  - docker run --rm -v `pwd`:/usr/src/vahlen -it tingelst/vahlen:1.0 ash -c "cmake .. && cmake --build ."
